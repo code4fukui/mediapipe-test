@@ -1,0 +1,78 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<title>Mediapipe Facemesh test</title>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+<h1>Mediapipe Facemesh test</h1>
+<div class="container">
+  <video id="videoElement" style="display:none"></video>
+  <canvas id="canvasElement" width="1280px" height="720px"></canvas>
+</div>
+<label><input type="checkbox" id="showimg">show original image</label>
+<label><input type="checkbox" id="mirrormode" checked>mirror mode</label>
+<hr>
+src: <a href="https://google.github.io/mediapipe/solutions/face_mesh.html">Face Mesh - mediapipe</a><br>
+<style>
+</style>
+
+<script type="module">
+const g = canvasElement.getContext("2d");
+
+const faceMesh = new FaceMesh({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}` });
+
+faceMesh.setOptions({
+  maxNumFaces: 2,
+  refineLandmarks: true,
+  minDetectionConfidence: 0.5,
+  minTrackingConfidence: 0.5,
+});
+faceMesh.onResults((res) => {
+  const w = canvasElement.width;
+  const h = canvasElement.height;
+  g.save();
+  if (mirrormode.checked) {
+    g.scale(-1, 1);
+    g.translate(-w, 0);
+    /* // 180度回転
+    g.translate(w / 2, h / 2);
+    g.rotate(Math.PI);
+    g.translate(-w / 2, -h / 2);
+    */
+  }
+  g.clearRect(0, 0, w, h);
+  if (showimg.checked) {
+    g.drawImage(res.image, 0, 0, w, h);
+  }
+  if (res.multiFaceLandmarks) {
+    for (const landmarks of res.multiFaceLandmarks) {
+      drawConnectors(g, landmarks, FACEMESH_TESSELATION, { color: 'gray', lineWidth: 1 });
+      drawConnectors(g, landmarks, FACEMESH_RIGHT_EYE, { color: 'black' });
+      drawConnectors(g, landmarks, FACEMESH_RIGHT_EYEBROW, { color: 'gray' });
+      drawConnectors(g, landmarks, FACEMESH_RIGHT_IRIS, { color: 'black' });
+      drawConnectors(g, landmarks, FACEMESH_LEFT_EYE, { color: 'black' });
+      drawConnectors(g, landmarks, FACEMESH_LEFT_EYEBROW, { color: 'gray' });
+      drawConnectors(g, landmarks, FACEMESH_LEFT_IRIS, { color: 'black' });
+      drawConnectors(g, landmarks, FACEMESH_FACE_OVAL, { color: "balck" });
+      drawConnectors(g, landmarks, FACEMESH_LIPS, { color: "red" });
+    }
+  }
+  g.restore();
+});
+
+const camera = new Camera(videoElement, {
+  onFrame: async () => {
+    await faceMesh.send({ image: videoElement });
+  },
+  width: 1280,
+  height: 720,
+});
+camera.start();
+
+</script>
+
+</body>
+</html>
