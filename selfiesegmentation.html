@@ -87,6 +87,10 @@ const camera = new Camera(videoElement, {
 });
 
 try {
+  const ua = navigator.userAgent;
+  if (ua.indexOf("Safari") >= 0 && (ua.indexOf("iPhone") >= 0 || ua.indexOf("iPad") >= 0)) {
+    throw "for Safari on iOS";
+  }
   camera.start();
 } catch (e) {
   console.log(e);
