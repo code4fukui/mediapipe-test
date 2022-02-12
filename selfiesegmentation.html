@@ -10,7 +10,6 @@
 <h1>Mediapipe Selfie-Segmentation test</h1>
   
 <div class="container">
-  <button id="btnstart" style="display:none">START!</button>
   <video id="videoElement" playsinline style="display:none"></video>
   <canvas id="canvasElement" width="1280px" height="720px"></canvas>
 </div>
@@ -85,22 +84,7 @@ const camera = new Camera(videoElement, {
   width: 1280,
   height: 720,
 });
-
-try {
-  const ua = navigator.userAgent;
-  if (ua.indexOf("Safari") >= 0 && (ua.indexOf("iPhone") >= 0 || ua.indexOf("iPad") >= 0)) {
-    throw "for Safari on iOS";
-  }
-  camera.start();
-} catch (e) {
-  console.log(e);
-  btnstart.style.display = "block";
-  btnstart.onclick = () => {
-    btnstart.style.display = "none";
-    camera.start();
-    videoElement.play();    
-  };
-}
+camera.start();
 </script>
 
 </body>
