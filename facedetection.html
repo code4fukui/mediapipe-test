@@ -1,0 +1,75 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<title>Mediapipe Face Detection test</title>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+<h1>Mediapipe Face Detection test</h1>
+<div class="container">
+  <video id="videoElement" playsinline style="display:none"></video>
+  <canvas id="canvasElement" width="1280px" height="720px"></canvas>
+</div>
+<label><input type="checkbox" id="showimg">show original image</label>
+<label><input type="checkbox" id="mirrormode" checked>mirror mode</label>
+<hr>
+src: <a href="https://google.github.io/mediapipe/solutions/face_detection">Face Detection - mediapipe</a><br>
+<style>
+</style>
+
+<script type="module">
+const g = canvasElement.getContext("2d");
+
+const faceDetection = new FaceDetection({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection@0.4/${file}` });
+
+faceDetection.setOptions({
+  //selfieMode: true,
+  model: 'short',
+  modelSelection: 0,
+  minDetectionConfidence: 0.5
+});
+faceDetection.onResults((res) => {
+  const w = canvasElement.width;
+  const h = canvasElement.height;
+  g.save();
+  if (mirrormode.checked) {
+    g.scale(-1, 1);
+    g.translate(-w, 0);
+    /* // 180度回転
+    g.translate(w / 2, h / 2);
+    g.rotate(Math.PI);
+    g.translate(-w / 2, -h / 2);
+    */
+  }
+  g.clearRect(0, 0, w, h);
+  if (showimg.checked) {
+    g.drawImage(res.image, 0, 0, w, h);
+  }
+  if (res.detections.length > 0) {
+    drawRectangle(
+      g, res.detections[0].boundingBox,
+      { color: 'blue', lineWidth: 4, fillColor: '#00000000' }
+    );
+    drawLandmarks(
+      g, res.detections[0].landmarks,
+      { color: 'red', radius: 5 }
+    );
+  }
+  g.restore();
+});
+
+const camera = new Camera(videoElement, {
+  onFrame: async () => {
+    await faceDetection.send({ image: videoElement });
+  },
+  width: 1280,
+  height: 720,
+});
+camera.start();
+
+</script>
+
+</body>
+</html>
