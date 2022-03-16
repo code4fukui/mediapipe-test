@@ -25,7 +25,7 @@ const g = canvasElement.getContext("2d");
 const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
 
 hands.setOptions({
-  maxNumHands: 2,
+  maxNumHands: 10,
   modelComplexity: 1,
   minDetectionConfidence: 0.5,
   minTrackingConfidence: 0.5,
@@ -49,8 +49,8 @@ hands.onResults((res) => {
   }
   if (res.multiHandLandmarks) {
     for (const landmarks of res.multiHandLandmarks) {
-      drawConnectors(g, landmarks, HAND_CONNECTIONS, { color: "#777777", lineWidth: 5 });
-      drawLandmarks(g, landmarks, { color: "#FF0000", lineWidth: 2 });
+      drawConnectors(g, landmarks, HAND_CONNECTIONS, { color: "#222", lineWidth: 5 });
+      drawLandmarks(g, landmarks, { color: "#222", lineWidth: 2 });
     }
   }
   g.restore();

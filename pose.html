@@ -1,0 +1,107 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<title>Mediapipe Pose test</title>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/control_utils_3d.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+<h1>Mediapipe Pose test</h1>
+<div class="container">
+  <video id="videoElement" playsinline style="display:none"></video>
+  <canvas id="canvasElement" width="1280px" height="720px"></canvas>
+  <div class="landmark-grid-container"></div>
+</div>
+<label><input type="checkbox" id="showimg">show original image</label>
+<label><input type="checkbox" id="segimg">overwrite by segmentation</label>
+<label><input type="checkbox" id="mirrormode" checked>mirror mode</label>
+<hr>
+src: <a href="https://google.github.io/mediapipe/solutions/pose.html">Pose - mediapipe</a><br>
+<style>
+</style>
+
+<script type="module">
+const g = canvasElement.getContext("2d");
+
+const pose = new Pose({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}` });
+
+//const landmarkContainer = document.getElementsByClassName('landmark-grid-container')[0];
+//const grid = new LandmarkGrid(landmarkContainer);
+
+pose.setOptions({
+  modelComplexity: 1,
+  smoothLandmarks: true,
+  enableSegmentation: true,
+  smoothSegmentation: true,
+  minDetectionConfidence: 0.5,
+  minTrackingConfidence: 0.5
+});
+pose.onResults((res) => {
+  if (!res.poseLandmarks) {
+    //grid.updateLandmarks([]);
+    return;
+  }
+  
+  const w = canvasElement.width;
+  const h = canvasElement.height;
+  g.save();
+  if (mirrormode.checked) {
+    g.scale(-1, 1);
+    g.translate(-w, 0);
+    /* // 180度回転
+    g.translate(w / 2, h / 2);
+    g.rotate(Math.PI);
+    g.translate(-w / 2, -h / 2);
+    */
+  }
+  g.clearRect(0, 0, w, h);
+  if (showimg.checked) {
+    if (segimg.checked) {
+      g.drawImage(res.segmentationMask, 0, 0, w, h);
+
+      // Only overwrite existing pixels.
+      g.globalCompositeOperation = 'source-in';
+      g.fillStyle = '#222222';
+      g.fillRect(0, 0, w, h);
+
+      // Only overwrite missing pixels.
+      g.globalCompositeOperation = 'destination-atop';
+    }
+    g.drawImage(res.image, 0, 0, w, h);
+  } else {
+    if (segimg.checked) {
+      g.drawImage(res.segmentationMask, 0, 0, w, h);
+
+      // Only overwrite existing pixels.
+      g.globalCompositeOperation = 'source-in';
+      g.fillStyle = '#222222';
+      g.fillRect(0, 0, w, h);
+
+      // Only overwrite missing pixels.
+      g.globalCompositeOperation = 'destination-atop';
+    }
+  }
+
+  g.globalCompositeOperation = 'source-over';
+  drawConnectors(g, res.poseLandmarks, POSE_CONNECTIONS, { color: '#777777', lineWidth: 4 });
+  drawLandmarks(g, res.poseLandmarks, { color: '#777777', lineWidth: 2 });
+  g.restore();
+
+  //grid.updateLandmarks(res.poseWorldLandmarks);
+});
+
+const camera = new Camera(videoElement, {
+  onFrame: async () => {
+    await pose.send({ image: videoElement });
+  },
+  width: 1280,
+  height: 720,
+});
+camera.start();
+
+</script>
+
+</body>
+</html>
