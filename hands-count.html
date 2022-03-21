@@ -1,0 +1,146 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<title>finger counter - Mediapipe Hands test</title>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+<h1>finger counter - Mediapipe Hands test</h1>
+  
+<div class="container">
+  <video id="videoElement" playsinline style="display:none"></video>
+  <div id="resultc"><div id="result"></div></div>
+  <canvas id="canvasElement" width="1280px" height="720px"></canvas>
+</div>
+
+<!--<textarea id="ta"></textarea>-->
+<label><input type="checkbox" id="showimg">show original image</label>
+<label><input type="checkbox" id="mirrormode" checked>mirror mode</label>
+<hr>
+src: <a href="https://google.github.io/mediapipe/solutions/hands">Hands - mediapipe</a><br>
+
+<style>
+.container {
+  position: relative;
+}
+#resultc {
+  position: absolute;
+  display: table;
+  top: 0;
+  left: 0;
+  width: 1280px;
+  height: 720px;
+  x-background-color: rgba(255, 0, 0, 0.5);
+}
+#result {
+  display: table-cell;
+  vertical-align: middle;
+  margin: 0 auto;
+  text-align: center;
+  max-width: 200px;
+  font-size: 300px;
+  color: black;
+}
+</style>
+
+<script type="module">
+const g = canvasElement.getContext("2d");
+
+const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
+
+class V3 {
+  static distance(p1, p2) {
+    const dx = p1.x - p2.x;
+    const dy = p1.y - p2.y;
+    const dz = p1.z - p2.z;
+    return Math.sqrt(dx * dx + dy * dy + dz * dz);
+    //return dx * dx + dy * dy + dz * dz;
+  }
+  static sub(p1, p2) {
+    return { x: p1.x - p2.x, y: p1.y - p2.y, z: p1.z - p2.z };
+  }
+  static add(p1, p2) {
+    return { x: p1.x + p2.x, y: p1.y + p2.y, z: p1.z + p2.z };
+  }
+  static zero() {
+    return { x: 0, y: 0, z: 0 };
+  }
+  static length(p) {
+    return Math.sqrt(p.x * p.x + p.y * p.y + p.z * p.z);
+  }
+  static normalize(p) {
+    const l = V3.length(p);
+    return { x: p.x / l, y: p.y / l, z: p.z / l };
+  }
+  static mul(p, n) {
+    return { x: p.x * n, y: p.y * n, z: p.z * n };
+  }
+};
+
+hands.setOptions({
+  maxNumHands: 10,
+  modelComplexity: 1,
+  minDetectionConfidence: 0.5,
+  minTrackingConfidence: 0.5,
+});
+hands.onResults((res) => {
+  const w = canvasElement.width;
+  const h = canvasElement.height;
+  g.save();
+  if (mirrormode.checked) {
+    g.scale(-1, 1);
+    g.translate(-w, 0);
+    /* // 180度回転
+    g.translate(w / 2, h / 2);
+    g.rotate(Math.PI);
+    g.translate(-w / 2, -h / 2);
+    */
+  }
+  g.clearRect(0, 0, w, h);
+  if (showimg.checked) {
+    g.drawImage(res.image, 0, 0, w, h);
+  }
+  if (res.multiHandLandmarks) {
+    let sum = 0;
+    for (const landmarks of res.multiHandLandmarks) {
+      // 人差し指から小指まで（0番との距離で判定）
+      const fingers = [8, 12, 16, 20];
+      const based = V3.distance(landmarks[0], landmarks[1]);
+      const cnt4 = fingers.filter(f => {
+        const d = V3.distance(landmarks[0], landmarks[f]);
+        return d / based > 4.5;
+      }).length;
+      
+      // 親指判定（関節が曲がっているかどうか）
+      const dv = V3.sub(landmarks[3], landmarks[2]);
+      const tlen = V3.distance(landmarks[4], landmarks[3]);
+      const dv2 = V3.mul(V3.normalize(dv), tlen);
+      const pv = V3.add(landmarks[3], dv2);
+      const dd = V3.distance(landmarks[4], pv) / based;
+      const tcnt = dd < 0.2;
+
+      const cnt = cnt4 + tcnt;
+      sum += cnt;
+
+      drawConnectors(g, landmarks, HAND_CONNECTIONS, { color: "#555", lineWidth: 5 });
+      drawLandmarks(g, landmarks, { color: "#555", lineWidth: 2 });
+    }
+    result.textContent = sum;
+  }
+  g.restore();
+});
+
+const camera = new Camera(videoElement, {
+  onFrame: async () => {
+    await hands.send({ image: videoElement });
+  },
+  width: 1280,
+  height: 720,
+});
+camera.start();
+</script>
+
+</body>
+</html>
