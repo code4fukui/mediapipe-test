@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
-<title>MediaPipe Pose test</title>
+<title>intercept with MediaPipe Pose</title>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/control_utils_3d.js" crossorigin="anonymous"></script>
@@ -8,27 +8,33 @@
 </head>
 
 <body>
-<h1>MediaPipe Pose test</h1>
+<h1>intercept with MediaPipe Pose</h1>
 <div class="container">
   <video id="videoElement" playsinline style="display:none"></video>
   <canvas id="canvasElement" width="1280px" height="720px"></canvas>
   <div class="landmark-grid-container"></div>
 </div>
-<label><input type="checkbox" id="showimg">show original image</label>
+<label><input type="checkbox" id="showimg" checked>show original image</label>
 <label><input type="checkbox" id="segimg">overwrite by segmentation</label>
 <label><input type="checkbox" id="mirrormode" checked>mirror mode</label>
 <hr>
 src: <a href="https://google.github.io/mediapipe/solutions/pose.html">Pose - MediaPipe</a><br>
+img: <a href="https://cybersakura.jp/">CyberSakura</a><br>
 <style>
 </style>
 
 <script type="module">
+import { V3 } from "./V3.js";
+
 const g = canvasElement.getContext("2d");
 
 const pose = new Pose({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}` });
 
 //const landmarkContainer = document.getElementsByClassName('landmark-grid-container')[0];
 //const grid = new LandmarkGrid(landmarkContainer);
+
+const img = new Image();
+img.src = "./cybersakura.png";
 
 pose.setOptions({
   modelComplexity: 1,
@@ -85,8 +91,22 @@ pose.onResults((res) => {
   }
 
   g.globalCompositeOperation = 'source-over';
-  drawConnectors(g, res.poseLandmarks, POSE_CONNECTIONS, { color: '#777777', lineWidth: 4 });
-  drawLandmarks(g, res.poseLandmarks, { color: '#777777', lineWidth: 2 });
+  //drawConnectors(g, res.poseLandmarks, POSE_CONNECTIONS, { color: '#777777', lineWidth: 4 });
+  //drawLandmarks(g, res.poseLandmarks, { color: '#777777', lineWidth: 2 });
+
+  const p = res.poseLandmarks;
+  //console.log(cp, img)
+  const cp = p[0];
+  const facew = V3.sub(p[7], p[8]);
+  const len = V3.length(facew) * w * 2;
+  const lenh = len / img.width * img.height;
+  if (mirrormode.checked) {
+    g.scale(-1, 1);
+    g.translate(-w, 0);
+    g.drawImage(img, 0, 0, img.width, img.height, w - cp.x * w - len / 2, cp.y * h - len / 2, len, lenh);
+  } else {
+    g.drawImage(img, 0, 0, img.width, img.height, cp.x * w - len / 2, cp.y * h - len / 2, len, lenh);
+  }
   g.restore();
 
   //grid.updateLandmarks(res.poseWorldLandmarks);
