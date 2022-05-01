@@ -25,7 +25,7 @@ const g = canvasElement.getContext("2d");
 const faceDetection = new FaceDetection({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection@0.4/${file}` });
 
 faceDetection.setOptions({
-  modelSelection: 1, // 0:short, 1:full-range
+  model: "short", // short or full?
   minDetectionConfidence: 0.5,
 });
 faceDetection.onResults((res) => {
