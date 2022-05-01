@@ -1,0 +1,104 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<title>Object Detection (coco-ssd) test</title>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"> </script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"> </script>
+</head>
+
+<body>
+<h1>Object Detection (coco-ssd) test</h1>
+<div class="container">
+  <video id="videoElement" playsinline style="display:none"></video>
+  <canvas id="canvasElement" width="1280px" height="720px"></canvas>
+  <div class="landmark-grid-container"></div>
+</div>
+<label><input type="checkbox" id="showimg" checked>show original image</label>
+<label><input type="checkbox" id="mirrormode">mirror mode</label>
+<hr>
+APP: <a href=https://github.com/code4fukui/mediapipe-test/objectdetection.html>Object Detection (coco-ssd) test - src on GitHub</a><br>
+LIB: <a href="https://github.com/tensorflow/tfjs-models/tree/master/coco-ssd">tfjs-models/coco-ssd at master · tensorflow/tfjs-models</a><br>
+<style>
+</style>
+
+<script type="module">
+const g = canvasElement.getContext("2d");
+
+const model = await cocoSsd.load();
+
+const children = [];
+
+const classes = [];
+
+//const threathold = 0.66;
+const threathold = 0;
+
+const draw = async (g, param) => {
+  const predictions = await model.detect(param.image);
+
+  for (const pred of predictions) {
+    if (pred.score > threathold) {
+      const p = document.createElement('p');
+      const conf = Math.round(parseFloat(pred.score) * 100);
+      const cls = pred.class;
+      const n = (() => {
+        const n = classes.indexOf(cls);
+        if (n >= 0) {
+          return n;
+        }
+        classes.push(cls);
+        return classes.length;
+      })();
+      const txt = `${cls} ${conf}%`;
+      const b = pred.bbox;
+      //g.fillStyle = "red";
+      const color = `hsl(${360 / 10 * n},50%,50%)`;
+      g.fillStyle = color;
+      g.font = "20px serif";
+      g.fillText(txt, b[0], b[1] - 5);
+      g.strokeStyle = color;
+      g.lineWidth = 4;
+      g.strokeRect(b[0], b[1], b[2], b[3]);
+      //console.log(b);
+    }
+  }
+};
+
+const tick = async () => {
+  const w = canvasElement.width;
+  const h = canvasElement.height;
+  g.save();
+  if (mirrormode.checked) {
+    g.scale(-1, 1);
+    g.translate(-w, 0);
+    /* // 180度回転
+    g.translate(w / 2, h / 2);
+    g.rotate(Math.PI);
+    g.translate(-w / 2, -h / 2);
+    */
+  }
+  g.clearRect(0, 0, w, h);
+  if (showimg.checked) {
+    g.drawImage(videoElement, 0, 0, w, h);
+  }
+
+  g.globalCompositeOperation = 'source-over';
+  await draw(g, { image: videoElement });
+  //draw(g);
+  g.restore();
+};
+
+const camera = new Camera(videoElement, {
+  onFrame: async () => {
+    await tick();
+  },
+  width: 1280,
+  height: 720,
+});
+camera.start();
+
+</script>
+
+</body>
+</html>
