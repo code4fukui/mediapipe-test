@@ -1,8 +1,6 @@
 <!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
 <title>Object Detection (coco-ssd) test</title>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"> </script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"> </script>
 </head>
@@ -16,6 +14,8 @@
 </div>
 <label><input type="checkbox" id="showimg" checked>show original image</label>
 <label><input type="checkbox" id="mirrormode">mirror mode</label>
+<label><input type="checkbox" id="videomode" checked>video mode</label>
+<input type="text" id="thrinp" value="0.66"> (threshold 0.0~1.0)
 <hr>
 APP: <a href=https://github.com/code4fukui/mediapipe-test/objectdetection.html>Object Detection (coco-ssd) test - src on GitHub</a><br>
 LIB: <a href="https://github.com/tensorflow/tfjs-models/tree/master/coco-ssd">tfjs-models/coco-ssd at master · tensorflow/tfjs-models</a><br>
@@ -23,20 +23,21 @@ LIB: <a href="https://github.com/tensorflow/tfjs-models/tree/master/coco-ssd">tf
 </style>
 
 <script type="module">
+import { setDropImageFileListener } from "https://js.sabae.cc/setDropImageFileListener.js";
+
 const g = canvasElement.getContext("2d");
 
 const model = await cocoSsd.load();
 
-const children = [];
-
 const classes = [];
-
-//const threathold = 0.66;
-const threathold = 0;
 
 const draw = async (g, param) => {
   const predictions = await model.detect(param.image);
+  const dw = param.w;
+  const w = param.image.width || dw;
+  const r = dw / w;
 
+  const threathold = parseFloat(thrinp.value);
   for (const pred of predictions) {
     if (pred.score > threathold) {
       const p = document.createElement('p');
@@ -51,8 +52,8 @@ const draw = async (g, param) => {
         return classes.length;
       })();
       const txt = `${cls} ${conf}%`;
-      const b = pred.bbox;
-      //g.fillStyle = "red";
+      const b = pred.bbox.map(d => d * r);
+      //console.log(b);
       const color = `hsl(${360 / 10 * n},50%,50%)`;
       g.fillStyle = color;
       g.font = "20px serif";
@@ -60,12 +61,11 @@ const draw = async (g, param) => {
       g.strokeStyle = color;
       g.lineWidth = 4;
       g.strokeRect(b[0], b[1], b[2], b[3]);
-      //console.log(b);
     }
   }
 };
 
-const tick = async () => {
+const tick = async (image) => {
   const w = canvasElement.width;
   const h = canvasElement.height;
   g.save();
@@ -80,24 +80,32 @@ const tick = async () => {
   }
   g.clearRect(0, 0, w, h);
   if (showimg.checked) {
-    g.drawImage(videoElement, 0, 0, w, h);
+    const sw = image.width || w;
+    const sh = image.height || h;
+    const h2 = w / sw * sh;
+    g.drawImage(image, 0, 0, sw, sh, 0, 0, w, h2);
   }
 
   g.globalCompositeOperation = 'source-over';
-  await draw(g, { image: videoElement });
-  //draw(g);
+  await draw(g, { image, w });
   g.restore();
 };
 
 const camera = new Camera(videoElement, {
   onFrame: async () => {
-    await tick();
+    if (videomode.checked) {
+      await tick(videoElement);
+    }
   },
   width: 1280,
   height: 720,
 });
 camera.start();
 
+setDropImageFileListener(document.body, async (img) => {
+  videomode.checked = false;
+  await tick(img);
+});
 </script>
 
 </body>
