@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
-<title>Mediapipe Hands test</title>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<title>Mediapipe Selfie-Segmentation test</title>
+<!--<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>-->
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js" crossorigin="anonymous"></script>
@@ -11,16 +11,34 @@
   
 <div class="container">
   <video id="videoElement" playsinline style="display:none"></video>
-  <canvas id="canvasElement" width="1280px" height="720px"></canvas>
+  <canvas id="canvasElement" width="1280px" height="720px" x-style="display:none"></canvas>
+  <!--
+  <canvas id="canvasImage"></canvas>-->
 </div>
 
 <label><input type="checkbox" id="showimg" checked>show original image</label>
 <label><input type="checkbox" id="mirrormode" checked>mirror mode</label>
 <label><input type="checkbox" id="maskparson" checked>mask parson</label>
+<label><input type="color" id="bgcolor">bgcolor</label>
 <hr>
 src: <a href="https://google.github.io/mediapipe/solutions/selfie_segmentation.html">Selfie Segmentation - mediapipe</a><br>
 
+<style>
+body {
+  margin: 0;
+}
+/*
+#outputImage {
+  width: 100vw;
+  aspect-ratio: 1280 / 720;
+  background-color: red;
+}
+*/
+</style>
+
 <script type="module">
+import { Camera } from "https://code4fukui.github.io/Camera/Camera.js";
+
 const g = canvasElement.getContext("2d");
 
 const selfieseg = new SelfieSegmentation({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}` });
@@ -44,11 +62,12 @@ selfieseg.onResults((res) => {
   g.clearRect(0, 0, w, h);
   g.drawImage(res.segmentationMask, 0, 0, w, h);
 
+  const color = bgcolor.value; // "#222222";
   if (maskparson.checked) {
     // Only overwrite existing pixels.
     //g.globalCompositeOperation = "destination-atop";
     g.globalCompositeOperation = "source-in";
-    g.fillStyle = "#222222";
+    g.fillStyle = color;
     g.fillRect(0, 0, w, h);
 
     if (showimg.checked) {
@@ -70,7 +89,7 @@ selfieseg.onResults((res) => {
     // Only overwrite existing pixels.
     g.globalCompositeOperation = "destination-atop";
     //g.globalCompositeOperation = "source-in";
-    g.fillStyle = "#222222";
+    g.fillStyle = color;
     g.fillRect(0, 0, w, h);
   }
   
@@ -80,6 +99,7 @@ selfieseg.onResults((res) => {
 const camera = new Camera(videoElement, {
   onFrame: async () => {
     await selfieseg.send({ image: videoElement });
+    //outputImage.src = canvasElement.toDataURL();
   },
   width: 1280,
   height: 720,
