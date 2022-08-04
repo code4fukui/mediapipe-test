@@ -1,6 +1,5 @@
 <!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
 <title>intercept with MediaPipe Pose</title>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/control_utils_3d.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
@@ -24,6 +23,7 @@ img: <a href="https://cybersakura.jp/">CyberSakura</a><br>
 </style>
 
 <script type="module">
+import { Camera } from "https://code4fukui.github.io/Camera/Camera.js";
 import { V3 } from "./V3.js";
 
 const g = canvasElement.getContext("2d");

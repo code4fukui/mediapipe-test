@@ -1,6 +1,5 @@
 <!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
 <title>Object Detection (coco-ssd) test</title>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"> </script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"> </script>
 </head>
@@ -24,6 +23,7 @@ Blog: <a href=https://fukuno.jig.jp/3567>一日一創</a> by <a href=https://twi
 </style>
 
 <script type="module">
+import { Camera } from "https://code4fukui.github.io/Camera/Camera.js";
 import { setDropImageFileListener } from "https://js.sabae.cc/setDropImageFileListener.js";
 
 const g = canvasElement.getContext("2d");
