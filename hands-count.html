@@ -11,12 +11,13 @@
 <div class="container">
   <video id="videoElement" playsinline style="display:none"></video>
   <div id="resultc"><div id="result"></div></div>
-  <canvas id="canvasElement" width="1280px" height="720px"></canvas>
+  <canvas id="canvasElement" width="1280px" height="720px" style="max-width:95vw"></canvas>
 </div>
 
 <!--<textarea id="ta"></textarea>-->
 <label><input type="checkbox" id="showimg">show original image</label>
 <label><input type="checkbox" id="mirrormode" checked>mirror mode</label>
+<label><input type="checkbox" id="backcameramode">backcamera mode</label>
 <hr>
 src: <a href="https://github.com/code4fukui/mediapipe-test/blob/main/hands-count.html">finger count</a> with <a href="https://google.github.io/mediapipe/solutions/hands">Hands - mediapipe</a><br>
 
@@ -31,6 +32,7 @@ src: <a href="https://github.com/code4fukui/mediapipe-test/blob/main/hands-count
   left: 0;
   width: 1280px;
   height: 720px;
+  max-width: 95vw; /* 効かない? */
   x-background-color: rgba(255, 0, 0, 0.5);
 }
 #result {
@@ -139,8 +141,10 @@ const camera = new Camera(videoElement, {
   },
   width: 1280,
   height: 720,
+  backcamera: backcameramode.checked,
 });
 camera.start();
+backcameramode.onchange = () => camera.flip();
 </script>
 
 </body>
