@@ -3,21 +3,24 @@
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 <h1>MediaPipe Face Detection test</h1>
 <div class="container">
-  <video id="videoElement" playsinline style="display:none"></video>
-  <canvas id="canvasElement" width="1280px" height="720px" style="max-width:95vw"></canvas>
+  <video id="videoElement" playsinline></video>
+  <canvas id="canvasElement"></canvas>
 </div>
 <label><input type="checkbox" id="showimg">show original image</label>
 <label><input type="checkbox" id="mirrormode" checked>mirror mode</label>
 <label><input type="checkbox" id="backcameramode">backcamera mode</label>
 <hr>
-src: <a href="https://google.github.io/mediapipe/solutions/face_detection">Face Detection - mediapipe</a><br>
-<style>
-</style>
+<footer>
+<a href=./>demo index</a><br>
+lib: <a href="https://chuoling.github.io/mediapipe/solutions/face_detection.html">Face Detection - mediapipe</a><br>
+src: <a href="https://github.com/code4fukui/mediapipe-test/">mediapipe-test</a><br>
+</footer>
 
 <script type="module">
 import { Camera } from "https://code4fukui.github.io/Camera/Camera.js";
@@ -62,6 +65,9 @@ faceDetection.onResults((res) => {
 
 const camera = new Camera(videoElement, {
   onFrame: async () => {
+    const dpi = devicePixelRatio;
+    canvasElement.width = videoElement.videoWidth * dpi;
+    canvasElement.height = videoElement.videoHeight * dpi;
     await faceDetection.send({ image: videoElement });
   },
   width: 1280,

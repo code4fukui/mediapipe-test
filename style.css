@@ -4,6 +4,9 @@ h1 {
 body {
   margin: 0;
 }
+#videoElement {
+  display: none;
+}
 #canvasElement {
   width: 100%;
 }

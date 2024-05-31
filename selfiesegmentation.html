@@ -4,14 +4,15 @@
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 <h1>Mediapipe Selfie-Segmentation test</h1>
   
 <div class="container">
-  <video id="videoElement" playsinline style="display:none"></video>
-  <canvas id="canvasElement" width="1280px" height="720px" style="max-width:95vw"></canvas>
+  <video id="videoElement" playsinline></video>
+  <canvas id="canvasElement"></canvas>
 </div>
 
 <label><input type="checkbox" id="showimg" checked>show original image</label>
@@ -20,20 +21,11 @@
 <label><input type="color" id="bgcolor">bgcolor</label>
 <label><input type="checkbox" id="backcameramode">backcamera mode</label>
 <hr>
-src: <a href="https://google.github.io/mediapipe/solutions/selfie_segmentation.html">Selfie Segmentation - mediapipe</a><br>
-
-<style>
-body {
-  margin: 0;
-}
-/*
-#outputImage {
-  width: 100vw;
-  aspect-ratio: 1280 / 720;
-  background-color: red;
-}
-*/
-</style>
+<footer>
+<a href=./>demo index</a><br>
+lib: <a href="https://chuoling.github.io/mediapipe/solutions/selfie_segmentation.html">Selfie Segmentation - mediapipe</a><br>
+src: <a href="https://github.com/code4fukui/mediapipe-test/">mediapipe-test</a><br>
+</footer>
 
 <script type="module">
 import { Camera } from "https://code4fukui.github.io/Camera/Camera.js";
@@ -97,6 +89,9 @@ selfieseg.onResults((res) => {
 
 const camera = new Camera(videoElement, {
   onFrame: async () => {
+    const dpi = devicePixelRatio;
+    canvasElement.width = videoElement.videoWidth * dpi;
+    canvasElement.height = videoElement.videoHeight * dpi;
     await selfieseg.send({ image: videoElement });
     //outputImage.src = canvasElement.toDataURL();
   },
