@@ -1,0 +1,12 @@
+h1 {
+  margin: .5em;
+}
+body {
+  margin: 0;
+}
+#canvasElement {
+  width: 100%;
+}
+footer {
+  margin: .5em;
+}
