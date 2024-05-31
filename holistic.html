@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="icon" href="data:">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="icon" href="data:">
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3/drawing_utils.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/holistic@0.5/holistic.js" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="style.css">
@@ -66,7 +66,7 @@ holistic.onResults((res) => {
   if (mirrormode.checked) {
     g.scale(-1, 1);
     g.translate(-w, 0);
-    /* // 180度回転
+    /* // rotate 180 deg
     g.translate(w / 2, h / 2);
     g.rotate(Math.PI);
     g.translate(-w / 2, -h / 2);
@@ -101,27 +101,29 @@ holistic.onResults((res) => {
   // on top of these marks.
   g.lineWidth = 5;
   if (res.poseLandmarks) {
-      if (res.rightHandLandmarks) {
-          g.strokeStyle = "white";
-          connect(g, [[
-            res.poseLandmarks[POSE_LANDMARKS.RIGHT_ELBOW],
-            res.rightHandLandmarks[0]
-          ]]);
-      }
-      if (res.leftHandLandmarks) {
-          g.strokeStyle = "white";
-          connect(g, [[
-            res.poseLandmarks[POSE_LANDMARKS.LEFT_ELBOW],
-            res.leftHandLandmarks[0]
-          ]]);
-      }
+    if (res.rightHandLandmarks) {
+      g.strokeStyle = "white";
+      connect(g, [[
+        res.poseLandmarks[POSE_LANDMARKS.RIGHT_ELBOW],
+        res.rightHandLandmarks[0]
+      ]]);
+    }
+    if (res.leftHandLandmarks) {
+      g.strokeStyle = "white";
+      connect(g, [[
+        res.poseLandmarks[POSE_LANDMARKS.LEFT_ELBOW],
+        res.leftHandLandmarks[0]
+      ]]);
+    }
   }
+
   // Pose...
   if (res.poseLandmarks) {
     drawConnectors(g, res.poseLandmarks, POSE_CONNECTIONS, { color: "white" });
     drawLandmarks(g, Object.values(POSE_LANDMARKS_LEFT).map(index => res.poseLandmarks[index]), { visibilityMin: 0.65, color: "white", fillColor: "rgb(255,138,0)" });
     drawLandmarks(g, Object.values(POSE_LANDMARKS_RIGHT).map(index => res.poseLandmarks[index]), { visibilityMin: 0.65, color: "white", fillColor: "rgb(0,217,231)" });
   }
+
   // Hands...
   drawConnectors(g, res.rightHandLandmarks, HAND_CONNECTIONS, { color: "white" });
   drawLandmarks(g, res.rightHandLandmarks, {
@@ -146,21 +148,7 @@ holistic.onResults((res) => {
   drawConnectors(g, res.faceLandmarks, FACEMESH_LEFT_EYEBROW, { color: "rgb(255,138,0)" });
   drawConnectors(g, res.faceLandmarks, FACEMESH_FACE_OVAL, { color: "#E0E0E0", lineWidth: 5 });
   drawConnectors(g, res.faceLandmarks, FACEMESH_LIPS, { color: "#E0E0E0", lineWidth: 5 });
-  /*
-  if (res.multiFaceLandmarks) {
-    for (const landmarks of res.multiFaceLandmarks) {
-      drawConnectors(g, landmarks, FACEMESH_TESSELATION, { color: "gray", lineWidth: 1 });
-      drawConnectors(g, landmarks, FACEMESH_RIGHT_EYE, { color: "black" });
-      drawConnectors(g, landmarks, FACEMESH_RIGHT_EYEBROW, { color: "gray" });
-      drawConnectors(g, landmarks, FACEMESH_RIGHT_IRIS, { color: "black" });
-      drawConnectors(g, landmarks, FACEMESH_LEFT_EYE, { color: "black" });
-      drawConnectors(g, landmarks, FACEMESH_LEFT_EYEBROW, { color: "gray" });
-      drawConnectors(g, landmarks, FACEMESH_LEFT_IRIS, { color: "black" });
-      drawConnectors(g, landmarks, FACEMESH_FACE_OVAL, { color: "balck" });
-      drawConnectors(g, landmarks, FACEMESH_LIPS, { color: "red" });
-    }
-  }
-  */
+
   g.restore();
 });
 
