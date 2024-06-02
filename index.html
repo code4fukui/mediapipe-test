@@ -1,18 +1,41 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="icon" href="data:">
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="icon" href="data:">
 <title>MediaPipe test</title>
 <body>
 <h1>MediaPipe test</h1>
-<a href=holistic.html>Holistic (Face Mesh + Hands + Pose + Selfie Segmentation)</a><br>
-<a href=facedetection.html>Face Detection</a><br>
-<a href=facemesh.html>Face Mesh</a><br>
-<a href=hands.html>Hands</a><br>
-<a href=hands-count.html>Hands (finger counter)</a><br>
-<a href=selfiesegmentation.html>Selfie Segmentation</a><br>
-<a href=pose.html>Pose</a><br>
-<a href=intercept.html>Pose (intercept)</a><br>
-<a href=objectdetection.html>Object Detection (coco-ssd)</a><br>
+
+<section>
+<h2>デモ</h2>
+<div>
+<a href=holistic.html>全身 - Holistic (Face Mesh + Hands + Pose + Selfie Segmentation)</a><br>
+<a href=facedetection.html>顔 - Face Detection</a><br>
+<a href=facemesh.html>顔メッシュ - Face Mesh</a><br>
+<a href=hands.html>手 - Hands</a><br>
+<a href=selfiesegmentation.html>背景分離 - Selfie Segmentation</a><br>
+<a href=pose.html>体 - Pose</a><br>
+<a href=objectdetection.html>物体検出 - Object Detection (coco-ssd)</a><br>
+</div>
+</section>
+
+<section>
+<h2>応用</h2>
+<div>
+<a href=hands-count.html>指カウント - Hands (finger counter)</a><br>
+<a href=intercept.html>顔上書き (intercept)</a><br>
+</div>
+</section>
+
 <hr>
 lib: <a href=https://chuoling.github.io/mediapipe/>MediaPipe</a><br>
 src: <a href=https://github.com/code4fukui/mediapipe-test/>mediapipe-test</a><br>
+
+<style>
+h2 {
+  margin: .2em 0;
+}
+section > div {
+  margin-left: .5em;
+}
+</style>
+
 </body>
 </html>
