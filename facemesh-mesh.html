@@ -1,0 +1,181 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<title>MediaPipe FaceMesh mesh test</title>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+<!--
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+-->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+<h1>MediaPipe FaceMesh mesh test</h1>
+<div class="container">
+  <video id="videoElement" playsinline style="display:none"></video>
+  <canvas id="canvasElement"></canvas>
+</div>
+<label><input type="checkbox" id="showimg">show original image</label>
+<label><input type="checkbox" id="mirrormode" x-checked>mirror mode</label>
+<label><input type="checkbox" id="backcameramode">backcamera mode</label>
+<select id="selzoom">
+  <option>1</option>
+  <option>2</option>
+  <option>3</option>
+  <option>4</option>
+  <option>5</option>
+</select>
+<hr>
+<footer>
+<a href=./>demo index</a><br>
+lib: <a href="https://chuoling.github.io/mediapipe/solutions/face_mesh.html">Face Mesh - mediapipe</a><br>
+src: <a href="https://github.com/code4fukui/mediapipe-test/">mediapipe-test</a><br>
+</footer>
+
+<script type="module">
+import { Camera } from "https://code4fukui.github.io/Camera/Camera.js";
+
+const g = canvasElement.getContext("2d");
+
+const faceMesh = new FaceMesh({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}` });
+
+function q(a) {
+  var c = "undefined" != typeof Symbol && Symbol.iterator && a[Symbol.iterator];
+  return c ? c.call(a) : { next: h(a) };
+};
+
+const w = {
+  color: "white",
+  lineWidth: 4,
+  radius: 6,
+  visibilityMin: .5,
+};
+
+const drawConnectors2 = (a, c, b, d, numon) => {
+  const x = (a) => {
+    a = a || {};
+    return Object.assign({}, w, { fillColor: a.color }, a);
+  };
+  const y = (a, c) => {
+    return a instanceof Function ? a(c) : a;
+  };
+  if (c && b) {
+    d = x(d);
+    a.save();
+    const w = canvasElement.width;
+    const h = canvasElement.height;
+    const zoom = parseInt(selzoom.value);
+    a.translate(-w / 2, -h / 2);
+    a.scale(zoom, zoom);
+    const rz = [.5, -1 / 16, -1 / 8, -1 / 4, -.3][zoom - 1];
+    //a.translate(w / 2, h / 2); // zoom 1
+    //a.translate(-w / 8, -h / 8); // zoom 2
+    //a.translate(-w / 8, -h / 8); // zoom 3
+    //a.translate(-w / 16, -h / 16); // zoom 4
+    //a.translate(-w / 4, -h / 4); // zoom 5
+    a.translate(w * rz, h * rz); // zoom 5
+    //a.translate(-w / (zoom * 2), -h / (zoom * 2));
+    const e = a.canvas;
+    let f = 0;
+    const b2 = q(b);
+    for (let g = b2.next(); !g.done; g = b2.next()) {
+      let k = g.value;
+      a.beginPath();
+      g = c[k[0]];
+      k = c[k[1]];
+      g && k && (
+        void 0 === g.visibility || g.visibility > d.visibilityMin
+      ) && (
+        void 0 === k.visibility || k.visibility > d.visibilityMin
+      ) && (
+        a.strokeStyle = y(d.color, { index: f, from: g, to: k }),
+        a.lineWidth = y(d.lineWidth, { index: f, from: g, to: k }),
+        a.moveTo(g.x * e.width, g.y * e.height),
+        a.lineTo(k.x * e.width, k.y * e.height)
+      );
+      a.stroke();
+      ++f;
+    }
+    if (numon) {
+      const pos = [];
+      for (const n of b) {
+        if (!pos.includes(n[0])) pos.push(n[0]);
+        if (!pos.includes(n[1])) pos.push(n[1]);
+      }
+      a.fillStyle = "black";
+      a.lineWidth = 1;
+      a.font = "normal 12px sans-serif";
+      pos.sort();
+      for (let i = 0; i < pos.length; i++) {
+        const p = pos[i];
+        const g = c[p];
+        a.fillText(p, g.x * e.width, g.y * e.height);
+      }
+    }
+    a.restore();
+  }
+};
+
+faceMesh.setOptions({
+  maxNumFaces: 5,
+  refineLandmarks: true,
+  minDetectionConfidence: 0.5,
+  minTrackingConfidence: 0.5,
+});
+faceMesh.onResults((res) => {
+  const w = canvasElement.width;
+  const h = canvasElement.height;
+  g.save();
+  if (mirrormode.checked) {
+    g.scale(-1, 1);
+    g.translate(-w, 0);
+    /* // 180度回転
+    g.translate(w / 2, h / 2);
+    g.rotate(Math.PI);
+    g.translate(-w / 2, -h / 2);
+    */
+  }
+  g.clearRect(0, 0, w, h);
+  if (showimg.checked) {
+    g.drawImage(res.image, 0, 0, w, h);
+  }
+  if (res.multiFaceLandmarks) {
+    for (const landmarks of res.multiFaceLandmarks) {
+      drawConnectors2(g, landmarks, FACEMESH_TESSELATION, { color: 'gray', lineWidth: 1 });
+      drawConnectors2(g, landmarks, FACEMESH_RIGHT_EYE, { color: 'black' });
+      drawConnectors2(g, landmarks, FACEMESH_RIGHT_EYEBROW, { color: 'gray' }, true);
+      drawConnectors2(g, landmarks, FACEMESH_RIGHT_IRIS, { color: 'black' });
+      drawConnectors2(g, landmarks, FACEMESH_LEFT_EYE, { color: 'black' }, true);
+      drawConnectors2(g, landmarks, FACEMESH_LEFT_EYEBROW, { color: 'gray' });
+      drawConnectors2(g, landmarks, FACEMESH_LEFT_IRIS, { color: 'black' });
+      drawConnectors2(g, landmarks, FACEMESH_FACE_OVAL, { color: "balck" });
+      drawConnectors2(g, landmarks, FACEMESH_LIPS, { color: "red" }, true);
+    }
+  }
+  g.restore();
+});
+
+const camera = new Camera(videoElement, {
+  onFrame: async () => {
+    const dpi = devicePixelRatio;
+    canvasElement.width = videoElement.videoWidth * dpi;
+    canvasElement.height = videoElement.videoHeight * dpi;
+    await faceMesh.send({ image: videoElement });
+  },
+  width: 1280,
+  height: 720,
+  backcamera: backcameramode.checked,
+});
+camera.start();
+backcameramode.onchange = () => camera.flip();
+</script>
+
+<style>
+body {
+  margin: 0;
+}
+#canvasElement {
+  width: 100%;
+}
+</style>
+
+</body>
+</html>
