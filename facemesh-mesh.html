@@ -35,7 +35,7 @@ src: <a href="https://github.com/code4fukui/mediapipe-test/">mediapipe-test</a><
 import { Camera } from "https://code4fukui.github.io/Camera/Camera.js";
 import { drawConnectors } from "./drawConnectors.js";
 import { drawConnectorsPolygon } from "./drawConnectorsPolygon.js";
-import { FACEMESH_POLYGON_LIPS } from "./FACEMESH_POLYGON.js";
+import { FACEMESH_POLYGON_LIPS, getFaceMeshPointEyeRight, getFaceMeshPointEyeLeft } from "./FACEMESH_POLYGON.js";
 
 const g = canvasElement.getContext("2d");
 
@@ -86,16 +86,23 @@ faceMesh.onResults((res) => {
       drawConnectors(g, landmarks, FACEMESH_TESSELATION, { color: 'gray', lineWidth: 1 });
       drawConnectors(g, landmarks, FACEMESH_RIGHT_EYE, { color: 'black' });
       drawConnectors(g, landmarks, FACEMESH_RIGHT_EYEBROW, { color: 'gray' }, true);
-      drawConnectors(g, landmarks, FACEMESH_RIGHT_IRIS, { color: 'black' });
+      drawConnectors(g, landmarks, FACEMESH_RIGHT_IRIS, { color: 'black' }, true); // 469, 470, 471, 472
       drawConnectors(g, landmarks, FACEMESH_LEFT_EYE, { color: 'black' }, true);
       drawConnectors(g, landmarks, FACEMESH_LEFT_EYEBROW, { color: 'gray' });
-      drawConnectors(g, landmarks, FACEMESH_LEFT_IRIS, { color: 'black' });
+      drawConnectors(g, landmarks, FACEMESH_LEFT_IRIS, { color: 'black' }, true); // 474, 475, 476, 477
       drawConnectors(g, landmarks, FACEMESH_FACE_OVAL, { color: "balck" });
       if (!chkfilllips.checked) {
         drawConnectors(g, landmarks, FACEMESH_LIPS, { color: "red" }, true);
       } else {
         drawConnectorsPolygon(g, landmarks, FACEMESH_POLYGON_LIPS, { color: "red" });
       }
+
+      const eyer = getFaceMeshPointEyeRight(landmarks);
+      const eyel = getFaceMeshPointEyeLeft(landmarks);
+      const ew = 6;
+      g.fillStyle = "blue";
+      g.fillRect(eyer.x * w - ew / 2, eyer.y * h - ew / 2, ew, ew);
+      g.fillRect(eyel.x * w - ew / 2, eyel.y * h - ew / 2, ew, ew);
     }
   }
   g.restore();
