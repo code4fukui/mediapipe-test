@@ -8,7 +8,6 @@ const getCenter = (landmarks, pnt) => {
   let x = 0;
   let y = 0;
   let z = 0;
-  console.log(pnt)
   const len = pnt.length;
   for (let i = 0; i < len; i++) {
     const p = landmarks[pnt[i][0]];
