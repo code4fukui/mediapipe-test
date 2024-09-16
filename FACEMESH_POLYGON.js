@@ -24,3 +24,25 @@ export const getFaceMeshPointEyeRight = (landmarks) => {
 export const getFaceMeshPointEyeLeft = (landmarks) => {
   return getCenter(landmarks, FACEMESH_LEFT_IRIS);
 };
+
+const getFaceMeshPointEye2 = (landmarks, left, right, up) => {
+  const p1 = landmarks[left];
+  const p2 = landmarks[right];
+  const p3 = landmarks[up];
+  //console.log(p1, p2);
+  return [p1, p2, p3];
+};
+
+// 133 right inner, 33 right outer, 159 right upper
+export const getFaceMeshPointEyeRight2 = (landmarks) => {
+  return getFaceMeshPointEye2(landmarks, 133, 33, 159);
+};
+
+// 263 left inner, 362 left outer, 386 left upper
+export const getFaceMeshPointEyeLeft2 = (landmarks) => {
+  return getFaceMeshPointEye2(landmarks, 362, 263, 386);
+};
+
+export const FACEMESH_POLYGON_NOSE_TOP = 4;
+export const FACEMESH_POLYGON_FACE_TOP = 10;
+export const FACEMESH_POLYGON_FACE_BOTTOM = 152;

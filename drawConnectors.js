@@ -48,13 +48,15 @@ export const drawConnectors = (a, c, b, d, numon) => {
         if (!pos.includes(n[0])) pos.push(n[0]);
         if (!pos.includes(n[1])) pos.push(n[1]);
       }
-      a.fillStyle = "black";
+      a.fillStyle = "gray";
       a.lineWidth = 1;
-      a.font = "normal 12px sans-serif";
+      a.font = "normal 8px sans-serif";
       pos.sort();
       for (let i = 0; i < pos.length; i++) {
         const p = pos[i];
         const g = c[p];
+        //if (p == 362 || p == 263) // 263 left inner, 362 left outer
+        //if (p == 33 || p == 133) // 133 right inner, 33 right outer
         a.fillText(p, g.x * e.width, g.y * e.height);
       }
     }

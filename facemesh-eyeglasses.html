@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
-<title>MediaPipe FaceMesh mesh test</title>
+<title>MediaPipe FaceMesh EyeGlasses</title>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
 <!--
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
@@ -8,16 +8,16 @@
 </head>
 
 <body>
-<h1>MediaPipe FaceMesh mesh test</h1>
+<h1>MediaPipe FaceMesh EyeGlasses</h1>
 <div class="container">
   <video id="videoElement" playsinline style="display:none"></video>
   <canvas id="canvasElement"></canvas>
 </div>
-<label><input type="checkbox" id="showimg">show original image</label>
+<label><input type="checkbox" id="showimg" checked>show original image</label>
 <label><input type="checkbox" id="mirrormode" checked>mirror mode</label>
 <label><input type="checkbox" id="backcameramode">backcamera mode</label>
-<label><input type="checkbox" id="chkdebug" checked>show debug</label>
-<label><input type="checkbox" id="chkfilllips" checked>fill lips</label>
+<label><input type="checkbox" id="chkdebug">show debug</label>
+<label><input type="checkbox" id="chkfilllips">fill lips</label>
 <label><input type="checkbox" id="chkeyeglass" checked>draw eyeglasses</label>
 <select id="selzoom">
   <option value=1>zoom x1</option>

@@ -3,8 +3,7 @@ class V3 {
     const dx = p1.x - p2.x;
     const dy = p1.y - p2.y;
     const dz = p1.z - p2.z;
-    return Math.sqrt(dx * dx + dy * dy + dz * dz);
-    //return dx * dx + dy * dy + dz * dz;
+    return Math.hypot(dx, dy, dz);
   }
   static sub(p1, p2) {
     return { x: p1.x - p2.x, y: p1.y - p2.y, z: p1.z - p2.z };
@@ -16,7 +15,7 @@ class V3 {
     return { x: 0, y: 0, z: 0 };
   }
   static length(p) {
-    return Math.sqrt(p.x * p.x + p.y * p.y + p.z * p.z);
+    return Math.hypot(p.x, p.y, p.z);
   }
   static normalize(p) {
     const l = V3.length(p);
@@ -25,6 +24,46 @@ class V3 {
   static mul(p, n) {
     return { x: p.x * n, y: p.y * n, z: p.z * n };
   }
+  static center(p1, p2) {
+    return {
+      x: (p1.x + p2.x) / 2,
+      y: (p1.y + p2.y) / 2,
+      z: (p1.z + p2.z) / 2,
+    };
+  }
+  static cross(v1, v2) {
+    return {
+      x: v1.y * v2.z - v1.z * v2.y,
+      y: v1.z * v2.x - v1.x * v2.z,
+      z: v1.x * v2.y - v1.y * v2.x,
+    };
+  }
+  static planeNormal(p1, p2, p3) {
+    const v1 = V3.sub(p2, p1);
+    const v2 = V3.sub(p3, p1);
+    const normal = V3.cross(v1, v2);
+    return V3.normalize(normal);
+  }
+  static circlePoints(center, normal, radius, segments = 32) {
+    const w = { x: 1, y: 0, z: 0 };
+    if (Math.abs(normal.x) === 1) {
+      w.x = 0;
+      w.y = 1;
+    }
+    const u = V3.normalize(V3.cross(normal, w));
+    const v = V3.normalize(V3.cross(normal, u));
+    const points = [];
+    for (let i = 0; i <= segments; i++) {
+      const theta = 2 * Math.PI * i / segments;
+      const cosTheta = Math.cos(theta);
+      const sinTheta = Math.sin(theta);
+      const x = center.x + radius * (cosTheta * u.x + sinTheta * v.x);
+      const y = center.y + radius * (cosTheta * u.y + sinTheta * v.y);
+      const z = center.z + radius * (cosTheta * u.z + sinTheta * v.z);
+      points.push({ x, y, z });
+    }
+    return points;
+  };
 };
 
 export { V3 };
