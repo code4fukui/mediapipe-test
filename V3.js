@@ -67,6 +67,14 @@ class V3 {
     }
     return points;
   }
+  static pointOnLine(a, b, c) {
+    const ab = V3.sub(b, a);
+    const ac = V3.sub(c, a);
+    const t = V3.dot(ac, ab) / V3.dot(ab, ab);
+    const pt = V3.add(a, V3.mul(V3.sub(b, a), t));
+    const d = V3.length(V3.sub(c, pt));
+    return { t, d };
+  }
 };
 
 export { V3 };

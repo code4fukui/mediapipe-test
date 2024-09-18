@@ -8,16 +8,8 @@ import {
 import { drawPointTest } from "./drawtest.js";
 
 export const getEyeTrack = (piris, peyer, peyel) => {
-  const a = peyer;
-  const b = peyel;
-  const c = piris;
-  const ab = V3.sub(b, a);
-  const ac = V3.sub(c, a);
-  const t = V3.dot(ac, ab) / V3.dot(ab, ab);
-  const pt = V3.add(a, V3.mul(V3.sub(b, a), t));
-  const d = V3.length(V3.sub(c, pt));
-  const x = (t - 0.5) * 2 + 0.5;
-  //return { x: , y: d };
+  const td = V3.pointOnLine(peyer, peyel, piris);
+  const x = (td.t - 0.5) * 2 + 0.5;
   return x;
 };
 
