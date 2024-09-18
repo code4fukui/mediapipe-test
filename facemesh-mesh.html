@@ -19,6 +19,7 @@
 <label><input type="checkbox" id="chkdebug" checked>show debug</label>
 <label><input type="checkbox" id="chkfilllips" checked>fill lips</label>
 <label><input type="checkbox" id="chkeyeglass" checked>draw eyeglasses</label>
+<label><input type="checkbox" id="chkeyetrack" checked>draw eyetrack</label>
 <select id="selzoom">
   <option value=1>zoom x1</option>
   <option value=2>zoom x2</option>
@@ -43,6 +44,7 @@ import {
   getFaceMeshPointEyeLeft,
 } from "./FACEMESH_POLYGON.js";
 import { drawEyeGlasses } from "./drawEyeGlasses.js";
+import { getEyeTrackRight, getEyeTrackLeft, drawEyeTrack } from "./eyeTrack.js";
 
 const g = canvasElement.getContext("2d");
 
@@ -64,20 +66,6 @@ const setZoom = (g) => {
   //a.translate(-w / (zoom * 2), -h / (zoom * 2));
 };
 
-const drawPointTest = (g, w, h, p, color = "red") => {
-  const ew = 6;
-  g.fillStyle = color;
-  g.fillRect(p.x * w - ew / 2, p.y * h - ew / 2, ew, ew);
-};
-const drawLineTest = (g, w, h, p1, p2, color = "red") => {
-  const ew = 6;
-  g.strokeStyle = color;
-  g.lineWidth = ew;
-  g.beginPath();
-  g.moveTo(p1.x * w, p1.y * h);
-  g.lineTo(p2.x * w, p2.y * h);
-  g.stroke();
-};
 
 faceMesh.setOptions({
   maxNumFaces: 5,
@@ -130,6 +118,14 @@ faceMesh.onResults((res) => {
       // for eye-glasses
       if (chkeyeglass.checked) {
         drawEyeGlasses(g, w, h, landmarks);
+      }
+
+      // for eye-track
+      if (chkeyetrack.checked) {
+        const pnt1 = getEyeTrackRight(landmarks);
+        drawEyeTrack(g, w, h, pnt1);
+        const pnt2 = getEyeTrackLeft(landmarks);
+        drawEyeTrack(g, w, h, pnt2);
       }
     }
   }

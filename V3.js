@@ -38,6 +38,9 @@ class V3 {
       z: v1.x * v2.y - v1.y * v2.x,
     };
   }
+  static dot(v1, v2) {
+    return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+  }
   static planeNormal(p1, p2, p3) {
     const v1 = V3.sub(p2, p1);
     const v2 = V3.sub(p3, p1);
@@ -63,7 +66,7 @@ class V3 {
       points.push({ x, y, z });
     }
     return points;
-  };
+  }
 };
 
 export { V3 };
