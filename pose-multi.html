@@ -1,15 +1,8 @@
 <!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="icon" href="data:">
 
 <!-- Mediapipe Pose -->
-<!--
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose"></script>
--->
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
-
-<!-- TensorFlow.js -->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-
-<!-- TensorFlow.js Models (YOLO model in this case) -->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
 <link rel="stylesheet" href="style.css">
 
@@ -39,12 +32,14 @@ src: <a href="https://github.com/code4fukui/mediapipe-test/">mediapipe-test</a><
 
 <script type="module">
 import { Camera } from "https://code4fukui.github.io/Camera/Camera.js";
+import { PoseMulti } from "./PoseMulti.js";
 
 const g = canvasElement.getContext("2d");
 
-const pose = new Pose({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}` });
+const poseMulti = new PoseMulti();
 
-pose.setOptions({
+poseMulti.setOptions({
+  maxNumPoses: 5,
   staticImageMode: false,
   modelComplexity: 1,
   smoothLandmarks: true,
@@ -54,41 +49,24 @@ pose.setOptions({
   minTrackingConfidence: 0.5
 });
 
-// Load the COCO-SSD model
-let model;
-cocoSsd.load().then((loadedModel) => {
-  model = loadedModel;
-});
 
 // Function to perform object detection and pose estimation
-async function detectFrame() {
+poseMulti.onResults = res => {
   const canvas = canvasElement;
   const video = videoElement;
+  const w = canvasElement.width;
+  const h = canvasElement.height;
 
   g.save();
   if (mirrormode.checked) {
     g.scale(-1, 1);
-    g.translate(-canvas.width, 0);
+    g.translate(-w, 0);
   }
-
-  // Clear canvas
-  g.clearRect(0, 0, canvas.width, canvas.height);
+  g.clearRect(0, 0, w, h);
   if (showimg.checked) {
-    g.drawImage(video, 0, 0, canvas.width, canvas.height);
+    g.drawImage(video, 0, 0, w, h);
   }
   
-  if (!model) return;
-  const predictions = await model.detect(video);
-
-  // Filter detections to only include 'person' class
-  const people = predictions.filter((pred) => pred.class === 'person');
-
-  const waitPose = async (image) => {
-    return new Promise(async (resolve) => {
-      pose.onResults(resolve);
-      pose.send({ image });
-    });
-  };
   // Function to draw pose landmarks
   function drawLandmarks(landmarks, offsetX, offsetY, width, height) {
     g.fillStyle = 'red';
@@ -101,9 +79,8 @@ async function detectFrame() {
       g.fill();
     }
   }
-
-  // Loop through detected persons
-  for (const person of people) {
+  g.scale(devicePixelRatio, devicePixelRatio);
+  for (const person of res.people) {
     const [x, y, width, height] = person.bbox;
 
     // Draw bounding box
@@ -113,33 +90,17 @@ async function detectFrame() {
     g.fillStyle = 'green';
     g.fillText(`Person`, x, y - 5);
 
-    //if (true) continue;
-    // Crop the video frame for each detected person
-    const personImage = document.createElement('canvas');
-    personImage.width = width;
-    personImage.height = height;
-    personImage.getContext('2d').drawImage(video, x, y, width, height, 0, 0, width, height);
-
-    // Convert the cropped image to ImageData
-    const imageData = personImage.getContext('2d').getImageData(0, 0, width, height);
-    
-    const results = await waitPose(imageData);
-    if (results.poseLandmarks) {
-      drawLandmarks(results.poseLandmarks, x, y, width, height);
-    }
+    drawLandmarks(person.poseLandmarks, x, y, width, height);
   }
   g.restore();
 };
 
-
 const camera = new Camera(videoElement, {
   onFrame: async () => {
-    //const dpi = devicePixelRatio;
-    const dpi = 1;
+    const dpi = devicePixelRatio;
     canvasElement.width = videoElement.videoWidth * dpi;
     canvasElement.height = videoElement.videoHeight * dpi;
-    //await pose.send({ image: videoElement });
-    await detectFrame();
+    await poseMulti.send({ image: videoElement });
   },
   width: 1280,
   height: 720,
