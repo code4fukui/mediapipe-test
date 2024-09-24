@@ -1,0 +1,119 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<title>Stick Figure (棒人間) - MediaPipe Pose</title>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<h1>Stick Figure (棒人間) - MediaPipe Pose</h1>
+<div class="container">
+  <video id="videoElement" playsinline></video>
+  <canvas id="canvasElement"></canvas>
+  <div class="landmark-grid-container"></div>
+</div>
+<label><input type="checkbox" id="showimg">show original image</label>
+<label><input type="checkbox" id="segimg">overwrite by segmentation</label>
+<label><input type="checkbox" id="mirrormode" checked>mirror mode</label>
+<label><input type="checkbox" id="backcameramode">backcamera mode</label>
+<hr>
+<footer>
+<a href=./>demo index</a><br>
+lib: <a href="https://chuoling.github.io/mediapipe/solutions/pose.html">Pose Segmentation - mediapipe</a><br>
+src: <a href="https://github.com/code4fukui/mediapipe-test/">mediapipe-test</a><br>
+</footer>
+
+<script type="module">
+import { Camera } from "https://code4fukui.github.io/Camera/Camera.js";
+import { drawStickFigure } from "./drawStickFigure.js";
+
+const g = canvasElement.getContext("2d");
+
+const pose = new Pose({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}` });
+
+//const landmarkContainer = document.getElementsByClassName('landmark-grid-container')[0];
+//const grid = new LandmarkGrid(landmarkContainer);
+
+pose.setOptions({
+  staticImageMode: false,
+  modelComplexity: 2,
+  smoothLandmarks: true,
+  enableSegmentation: true,
+  smoothSegmentation: true,
+  minDetectionConfidence: 0.5,
+  minTrackingConfidence: 0.5
+});
+pose.onResults((res) => {
+  if (!res.poseLandmarks) {
+    //grid.updateLandmarks([]);
+    return;
+  }
+  
+  const w = canvasElement.width;
+  const h = canvasElement.height;
+  g.save();
+  if (mirrormode.checked) {
+    g.scale(-1, 1);
+    g.translate(-w, 0);
+    /* // 180度回転
+    g.translate(w / 2, h / 2);
+    g.rotate(Math.PI);
+    g.translate(-w / 2, -h / 2);
+    */
+  }
+  g.clearRect(0, 0, w, h);
+  if (showimg.checked) {
+    if (segimg.checked) {
+      g.drawImage(res.segmentationMask, 0, 0, w, h);
+
+      // Only overwrite existing pixels.
+      g.globalCompositeOperation = 'source-in';
+      g.fillStyle = '#222222';
+      g.fillRect(0, 0, w, h);
+
+      // Only overwrite missing pixels.
+      g.globalCompositeOperation = 'destination-atop';
+    }
+    g.drawImage(res.image, 0, 0, w, h);
+  } else {
+    if (segimg.checked) {
+      g.drawImage(res.segmentationMask, 0, 0, w, h);
+
+      // Only overwrite existing pixels.
+      g.globalCompositeOperation = 'source-in';
+      g.fillStyle = '#222222';
+      g.fillRect(0, 0, w, h);
+
+      // Only overwrite missing pixels.
+      g.globalCompositeOperation = 'destination-atop';
+    }
+  }
+
+  g.globalCompositeOperation = 'source-over';
+  drawStickFigure(g, res.poseLandmarks, { color: '#000000', lineWidth: 8 });
+  //drawConnectors(g, res.poseLandmarks, POSE_CONNECTIONS, { color: '#777777', lineWidth: 4 });
+  //drawLandmarks(g, res.poseLandmarks, { color: '#777777', lineWidth: 2 });
+  g.restore();
+
+  //grid.updateLandmarks(res.poseWorldLandmarks);
+});
+
+const camera = new Camera(videoElement, {
+  onFrame: async () => {
+    const dpi = devicePixelRatio;
+    canvasElement.width = videoElement.videoWidth * dpi;
+    canvasElement.height = videoElement.videoHeight * dpi;
+    await pose.send({ image: videoElement });
+  },
+  width: 1280,
+  height: 720,
+  backcamera: backcameramode.checked,
+});
+camera.start();
+backcameramode.onchange = () => camera.flip();
+
+</script>
+
+</body>
+</html>
