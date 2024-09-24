@@ -11,12 +11,6 @@ export const drawStickFigure = (g, p, opt) => {
   // face
   const r = V3.distance(p[8], p[7]) * 2.0 * w / 2;
   drawCircle(g, p[0].x * w, p[0].y * h, r);
-
-  const len = (x1, y1, x2, y2) => {
-    const dx = x1 - x2;
-    const dy = y1 - y2;
-    return Math.sqrt(dx * dx + dy * dy);
-  }
   // neck
   const p1 = V3.center(p[12], p[11]);
   const dx = (p1.x - p[0].x) * w;
@@ -26,7 +20,6 @@ export const drawStickFigure = (g, p, opt) => {
   const p2y = p[0].y * h + Math.sin(th1) * r;
   const r2 = V2.distance(V2.mul(p[0], w, h), V2.mul(p1, w, h));
   const p1a = r2 > r ? { x: p1.x * w, y: p1.y * h } : { x: p2x, y: p2y };
-  //const p1a = false ? { x: p1.x * w, y: p1.y * h } : { x: p2x, y: p2y };
   drawLine(g, p1a.x, p1a.y, p2x, p2y);
   // spine
   const p3 = V3.center(p[24], p[23]);
