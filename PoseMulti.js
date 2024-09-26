@@ -37,10 +37,11 @@ export class PoseMulti {
       person.poseLandmarks = results.poseLandmarks;
       res.push(person);
     }
-    this.onResults({ people: res });
+    if (this.onresults) this.onresults({ people: res });
     return res;
   }
-  onResults(results) { // for overrride
+  onResults(f) {
+    this.onresults = f;
   }
   async waitPose(image) {
     return new Promise(async (resolve) => {

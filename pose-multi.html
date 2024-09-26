@@ -51,7 +51,7 @@ poseMulti.setOptions({
 
 
 // Function to perform object detection and pose estimation
-poseMulti.onResults = res => {
+poseMulti.onResults(res => {
   const canvas = canvasElement;
   const video = videoElement;
   const w = canvasElement.width;
@@ -81,7 +81,8 @@ poseMulti.onResults = res => {
   }
   g.scale(devicePixelRatio, devicePixelRatio);
   for (const person of res.people) {
-    const [x, y, width, height] = person.bbox;
+    const [x, y, width, height ] = person.bbox;
+    const poseLandmarks = person.poseLandmarks;
 
     // Draw bounding box
     g.strokeStyle = 'green';
@@ -90,10 +91,10 @@ poseMulti.onResults = res => {
     g.fillStyle = 'green';
     g.fillText(`Person`, x, y - 5);
 
-    drawLandmarks(person.poseLandmarks, x, y, width, height);
+    drawLandmarks(poseLandmarks, x, y, width, height);
   }
   g.restore();
-};
+});
 
 const camera = new Camera(videoElement, {
   onFrame: async () => {
