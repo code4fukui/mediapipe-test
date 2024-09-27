@@ -1,0 +1,167 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<title>intercept with MediaPipe Pose</title>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<h1>intercept-multi with MediaPipe Pose</h1>
+<div class="container">
+  <video id="videoElement" playsinline></video>
+  <canvas id="canvasElement">
+  </canvas>
+  <div class="landmark-grid-container"></div>
+  <img id=img1 src="./img/sabaematsuri/basic/01_textblue.png">
+  <img id=img2 src="./img/sabaematsuri/basic/02_textred.png">
+  <img id=img5 src="./img/sabaematsuri/basic/05_textred.png">
+</div>
+<label><input type="checkbox" id="showimg" checked>show original image</label>
+<!--<label><input type="checkbox" id="segimg">overwrite by segmentation</label>-->
+<label><input type="checkbox" id="mirrormode" checked>mirror mode</label>
+<label><input type="checkbox" id="backcameramode">backcamera mode</label>
+<hr>
+
+
+<style>
+.container {
+  position: relative;
+}
+#img1, #img2, #img5 {
+  position: absolute;
+}
+#img1 {
+  bottom: 2%;
+  right: 2%;
+  width: 20%;
+}
+#img2 {
+  top: 2%;
+  left: 2%;
+  width: 20%;
+}
+#img5 {
+  top: 20%;
+  left: 2%;
+  width: 20%;
+}
+</style>
+
+
+<footer>
+<a href=./>demo index</a><br>
+lib: <a href="https://chuoling.github.io/mediapipe/solutions/pose.html">Pose - mediapipe</a><br>
+img: <a href="https://www.instagram.com/sabaematsuri/">さばえまつり</a><br>
+src: <a href="https://github.com/code4fukui/mediapipe-test/">mediapipe-test</a><br>
+</footer>
+
+<script type="module">
+import { Camera } from "https://code4fukui.github.io/Camera/Camera.js";
+import { PoseMulti } from "./PoseMulti.js";
+import { V2 } from "./V2.js";
+
+const g = canvasElement.getContext("2d");
+
+const poseMulti = new PoseMulti();
+
+//const landmarkContainer = document.getElementsByClassName('landmark-grid-container')[0];
+//const grid = new LandmarkGrid(landmarkContainer);
+
+const img = new Image();
+img.src = "./img/sabaematsuri/basic/03_blueeye.png";
+
+function drawLandmarks(g, landmarks, offsetX, offsetY, width, height) {
+  g.fillStyle = 'red';
+  //g.lineWidth = 2;
+
+  for (const landmark of landmarks) {
+    const { x, y } = landmark;
+    g.beginPath();
+    g.arc(x * width + offsetX, y * height + offsetY, 5, 0, 2 * Math.PI);
+    g.fill();
+  }
+}
+
+
+poseMulti.setOptions({
+  maxNumPoses: 5,
+  modelComplexity: 1,
+  smoothLandmarks: true,
+  enableSegmentation: true,
+  smoothSegmentation: true,
+  minDetectionConfidence: 0.5,
+  minTrackingConfidence: 0.5
+});
+poseMulti.onResults((res) => {
+  const canvas = canvasElement;
+  const video = videoElement;
+  const w = canvasElement.width;
+  const h = canvasElement.height;
+  const dpi = devicePixelRatio;
+
+  g.save();
+  if (mirrormode.checked) {
+    g.scale(-1, 1);
+    g.translate(-w, 0);
+  }
+  g.clearRect(0, 0, w, h);
+  if (showimg.checked) {
+    g.drawImage(video, 0, 0, w, h);
+  }
+
+  for (const person of res.people) {
+    const [x, y, width, height ] = person.bbox;
+    const poseLandmarks = person.poseLandmarks;
+
+    const p = poseLandmarks;
+    p.forEach(i => {
+      i.x = (x / w + i.x * width / w) * dpi;
+      i.y = (y / h + i.y * height / h) * dpi;
+    });
+    const cp = p[0];
+    const facew = V2.sub(p[7], p[8]);
+    const len = V2.length(facew) * w * 1.7;
+    const lenh = len / img.width * img.height;
+    const fathth = Math.atan2(p[7].y - p[8].y, p[7].x - p[8].x);
+    const cx = cp.x * w;
+    const cy = cp.y * h;
+
+    g.save();
+    g.translate(cx, cy);
+    g.rotate(fathth);
+    g.translate(-cx, -cy);
+
+    /*
+    if (mirrormode.checked) {
+      g.drawImage(img, 0, 0, img.width, img.height, w - cp.x * w - len / 2, cp.y * h - len / 2, len, lenh);
+    } else {
+      g.drawImage(img, 0, 0, img.width, img.height, cp.x * w - len / 2, cp.y * h - len / 2, len, lenh);
+    }
+    */
+    g.drawImage(img, 0, 0, img.width, img.height, cx - len / 2, cy - len * 0.4, len, lenh);
+    //drawLandmarks(g, poseLandmarks, x, y, width, height);
+    g.restore();
+  }
+  g.restore();
+
+  //grid.updateLandmarks(res.poseWorldLandmarks);
+});
+
+const camera = new Camera(videoElement, {
+  onFrame: async () => {
+    const dpi = devicePixelRatio;
+    canvasElement.width = videoElement.videoWidth * dpi;
+    canvasElement.height = videoElement.videoHeight * dpi;
+    await poseMulti.send({ image: videoElement });
+  },
+  width: 1280,
+  height: 720,
+  backcamera: backcameramode.checked,
+});
+camera.start();
+backcameramode.onchange = () => camera.flip();
+</script>
+
+</body>
+</html>
