@@ -8,7 +8,7 @@
 
 <body>
 <h1>intercept-multi with MediaPipe Pose</h1>
-<div class="container">
+<div id="divElement" class="container">
   <video id="videoElement" playsinline></video>
   <canvas id="canvasElement">
   </canvas>
@@ -161,6 +161,8 @@ const camera = new Camera(videoElement, {
 });
 camera.start();
 backcameramode.onchange = () => camera.flip();
+
+divElement.onclick = () => divElement.requestFullscreen();
 </script>
 
 </body>
