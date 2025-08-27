@@ -48,7 +48,7 @@ export const drawConnectors = (a, c, b, d, numon) => {
         if (!pos.includes(n[0])) pos.push(n[0]);
         if (!pos.includes(n[1])) pos.push(n[1]);
       }
-      a.fillStyle = "gray";
+      a.fillStyle = "black";
       a.lineWidth = 1;
       a.font = "normal 8px sans-serif";
       pos.sort();
