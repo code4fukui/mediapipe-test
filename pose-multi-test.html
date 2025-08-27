@@ -1,0 +1,108 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="icon" href="data:">
+
+<!-- Mediapipe Pose -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose"></script>
+
+<!-- TensorFlow.js -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+
+<!-- TensorFlow.js Models (YOLO model in this case) -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+
+
+<video id="video" width="640" height="480" autoplay muted></video>
+<canvas id="output" width="640" height="480"></canvas>
+
+<script>
+// Load Mediapipe Pose and TensorFlow.js COCO-SSD model
+const pose = new Pose({
+  locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`,
+});
+
+pose.setOptions({
+  modelComplexity: 1,
+  smoothLandmarks: true,
+  minDetectionConfidence: 0.5,
+  minTrackingConfidence: 0.5,
+});
+
+// Load the COCO-SSD model
+let model;
+cocoSsd.load().then((loadedModel) => {
+  model = loadedModel;
+  startVideo();
+});
+
+// Initialize video stream
+const video = document.getElementById('video');
+const canvas = document.getElementById('output');
+const ctx = canvas.getContext('2d');
+
+async function startVideo() {
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: { width: 640, height: 480 },
+  });
+  video.srcObject = stream;
+  video.addEventListener('loadeddata', detectFrame);
+}
+
+// Function to perform object detection and pose estimation
+async function detectFrame() {
+  if (model) {
+    const predictions = await model.detect(video);
+
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Filter detections to only include 'person' class
+    const persons = predictions.filter((pred) => pred.class === 'person');
+
+    // Loop through detected persons
+    for (const person of persons) {
+      const [x, y, width, height] = person.bbox;
+
+      // Draw bounding box
+      ctx.strokeStyle = 'green';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, y, width, height);
+      ctx.fillStyle = 'green';
+      ctx.fillText(`Person`, x, y - 5);
+
+      // Crop the video frame for each detected person
+      const personImage = document.createElement('canvas');
+      personImage.width = width;
+      personImage.height = height;
+      personImage.getContext('2d').drawImage(video, x, y, width, height, 0, 0, width, height);
+
+      // Convert the cropped image to ImageData
+      const imageData = personImage.getContext('2d').getImageData(0, 0, width, height);
+
+      // Apply Mediapipe Pose to the cropped image data
+      pose.send({ image: imageData });
+
+      // Add an event listener to handle pose estimation results
+      pose.onResults((results) => {
+        if (results.poseLandmarks) {
+          drawLandmarks(results.poseLandmarks, x, y);
+        }
+      });
+    }
+  }
+
+  requestAnimationFrame(detectFrame);
+}
+
+// Function to draw pose landmarks
+function drawLandmarks(landmarks, offsetX, offsetY) {
+  ctx.strokeStyle = 'red';
+  ctx.lineWidth = 2;
+
+  for (const landmark of landmarks) {
+    const { x, y } = landmark;
+    ctx.beginPath();
+    ctx.arc(x * canvas.width + offsetX, y * canvas.height + offsetY, 5, 0, 2 * Math.PI);
+    ctx.fill();
+  }
+}
+</script>

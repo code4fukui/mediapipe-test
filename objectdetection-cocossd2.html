@@ -1,0 +1,82 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="icon" href="data:">
+
+<!-- TensorFlow.js -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+
+<!-- TensorFlow.js Models (YOLO model in this case) -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+<link rel="stylesheet" href="style.css">
+
+</head><body>
+
+<h1>TensorFlow COCO-SSD test</h1>
+<div class="container">
+  <video id="videoElement" playsinline></video>
+  <canvas id="canvasElement"></canvas>
+  <div class="landmark-grid-container"></div>
+</div>
+<label><input type="checkbox" id="showimg">show original image</label>
+<label><input type="checkbox" id="mirrormode" checked>mirror mode</label>
+<label><input type="checkbox" id="backcameramode">backcamera mode</label>
+<hr>
+<footer>
+<a href=./>demo index</a><br>
+lib: <a href="https://github.com/tensorflow/tfjs-models">tensorflow/tfjs-models: Pretrained models for TensorFlow.js</a><br>
+src: <a href="https://github.com/code4fukui/mediapipe-test/">mediapipe-test</a><br>
+</footer>
+
+<script type="module">
+import { Camera } from "https://code4fukui.github.io/Camera/Camera.js";
+
+// Load the COCO-SSD model
+let model;
+cocoSsd.load().then((loadedModel) => {
+  model = loadedModel;
+});
+
+const g = canvasElement.getContext("2d");
+
+// Function to perform object detection and pose estimation
+const detectFrame = async () => {
+  const w = canvasElement.width;
+  const h = canvasElement.height;
+
+  // Clear canvas
+  g.clearRect(0, 0, w, h);
+  if (showimg.checked) {
+    g.drawImage(videoElement, 0, 0, w, h);
+  }
+  
+  if (!model) return;
+  const predictions = await model.detect(videoElement);
+
+  // Loop through detected persons
+  for (const pred of predictions) {
+    const [x, y, width, height] = pred.bbox;
+
+    // Draw bounding box
+    g.strokeStyle = 'green';
+    g.lineWidth = 2;
+    g.strokeRect(x, y, width, height);
+    g.fillStyle = 'green';
+    g.fillText(pred.class, x, y - 5);
+  }
+};
+
+const camera = new Camera(videoElement, {
+  onFrame: async () => {
+    //const dpi = devicePixelRatio;
+    const dpi = 1;
+    canvasElement.width = videoElement.videoWidth * dpi;
+    canvasElement.height = videoElement.videoHeight * dpi;
+    //await pose.send({ image: videoElement });
+    detectFrame();
+  },
+  width: 1280,
+  height: 720,
+  backcamera: backcameramode.checked,
+});
+camera.start();
+backcameramode.onchange = () => camera.flip();
+
+</script>

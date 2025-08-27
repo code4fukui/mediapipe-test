@@ -1,0 +1,56 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="icon" href="data:">
+
+<!-- TensorFlow.js -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+
+<!-- TensorFlow.js Models (YOLO model in this case) -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+
+
+<video id="video" width="640" height="480" autoplay muted></video>
+<canvas id="output" width="640" height="480"></canvas>
+
+<script>
+// Load the COCO-SSD model
+let model;
+cocoSsd.load().then((loadedModel) => {
+  model = loadedModel;
+  startVideo();
+});
+
+// Initialize video stream
+const video = document.getElementById('video');
+const canvas = document.getElementById('output');
+const ctx = canvas.getContext('2d');
+
+async function startVideo() {
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: { width: 640, height: 480 },
+  });
+  video.srcObject = stream;
+  video.addEventListener('loadeddata', detectFrame);
+}
+
+// Function to perform object detection and pose estimation
+async function detectFrame() {
+  if (!model) return;
+  const predictions = await model.detect(video);
+
+  // Clear canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  // Loop through detected persons
+  for (const pred of predictions) {
+    const [x, y, width, height] = pred.bbox;
+
+    // Draw bounding box
+    ctx.strokeStyle = 'green';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x, y, width, height);
+    ctx.fillStyle = 'green';
+    ctx.fillText(pred.class, x, y - 5);
+  }
+  requestAnimationFrame(detectFrame);
+}
+</script>

@@ -35,7 +35,8 @@ const pose = new Pose({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@med
 //const grid = new LandmarkGrid(landmarkContainer);
 
 pose.setOptions({
-  modelComplexity: 1,
+  staticImageMode: false,
+  modelComplexity: 2,
   smoothLandmarks: true,
   enableSegmentation: true,
   smoothSegmentation: true,
