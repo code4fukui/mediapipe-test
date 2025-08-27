@@ -10,5 +10,9 @@ export const drawConnectorsPolygon = (g, landmarks, polygon, opt) => {
     const p = landmarks[polygon[i]];
     g.lineTo(p.x * cw, p.y * ch);
   }
-  g.fill();
+  if (opt.clip) {
+    g.clip();
+  } else {
+    g.fill();
+  }
 };

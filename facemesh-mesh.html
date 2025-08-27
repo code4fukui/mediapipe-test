@@ -13,13 +13,13 @@
   <video id="videoElement" playsinline style="display:none"></video>
   <canvas id="canvasElement"></canvas>
 </div>
-<label><input type="checkbox" id="showimg">show original image</label>
+<label><input type="checkbox" id="showimg" checked>show original image</label>
 <label><input type="checkbox" id="mirrormode" checked>mirror mode</label>
 <label><input type="checkbox" id="backcameramode">backcamera mode</label>
-<label><input type="checkbox" id="chkdebug" checked>show debug</label>
-<label><input type="checkbox" id="chkfilllips" checked>fill lips</label>
+<label><input type="checkbox" id="chkdebug">show debug</label>
+<label><input type="checkbox" id="chkfilllips" checked>vtuber mode</label>
 <label><input type="checkbox" id="chkeyeglass" checked>draw eyeglasses</label>
-<label><input type="checkbox" id="chkeyetrack" checked>draw eyetrack</label>
+<label><input type="checkbox" id="chkeyetrack">draw eyetrack</label>
 <select id="selzoom">
   <option value=1>zoom x1</option>
   <option value=2>zoom x2</option>
@@ -38,10 +38,20 @@ src: <a href="https://github.com/code4fukui/mediapipe-test/">mediapipe-test</a><
 import { Camera } from "https://code4fukui.github.io/Camera/Camera.js";
 import { drawConnectors } from "./drawConnectors.js";
 import { drawConnectorsPolygon } from "./drawConnectorsPolygon.js";
+import { drawConnectorsPolyline } from "./drawConnectorsPolyline.js";
+import { drawConnectorsIris } from "./drawConnectorsIris.js";
 import {
   FACEMESH_POLYGON_LIPS,
   getFaceMeshPointEyeRight,
   getFaceMeshPointEyeLeft,
+  FACEMESH_POLYLINE_RIGHT_EYEBROW,
+  FACEMESH_POLYLINE_LEFT_EYEBROW,
+  FACEMESH_POLYGON_RIGHT_EYE,
+  FACEMESH_POLYGON_LEFT_EYE,
+  FACEMESH_POLYGON_FACE_OVAL,
+  //FACEMESH_POLYGON_FACE_OVAL_NO_EYES,
+  FACEMESH_POLYGON_RIGHT_IRIS,
+  FACEMESH_POLYGON_LEFT_IRIS,  
 } from "./FACEMESH_POLYGON.js";
 import { drawEyeGlasses } from "./drawEyeGlasses.js";
 import { getEyeTrackRight, getEyeTrackLeft, drawEyeTrack } from "./eyeTrack.js";
@@ -66,6 +76,9 @@ const setZoom = (g) => {
   //a.translate(-w / (zoom * 2), -h / (zoom * 2));
 };
 
+//console.log(FACEMESH_RIGHT_EYE); // [[p1, p2], ...]
+//console.log(FACEMESH_RIGHT_IRIS); // 4 points
+//console.log(FACEMESH_FACE_OVAL);
 
 faceMesh.setOptions({
   maxNumFaces: 5,
@@ -112,7 +125,32 @@ faceMesh.onResults((res) => {
         g.fillRect(eyel.x * w - ew / 2, eyel.y * h - ew / 2, ew, ew);
       }
       if (chkfilllips.checked) {
+        // face oval = 顔全体
+        drawConnectorsPolygon(g, landmarks, FACEMESH_POLYGON_FACE_OVAL, { color: "#FEDCBD" });
+        //drawConnectorsPolygon(g, landmarks, FACEMESH_POLYGON_FACE_OVAL_NO_EYES, { color: "white" });
+
+        // eye
+        drawConnectorsPolygon(g, landmarks, FACEMESH_POLYGON_RIGHT_EYE, { color: "white" });
+        drawConnectorsPolygon(g, landmarks, FACEMESH_POLYGON_LEFT_EYE, { color: "white" });
+
+        // eye iris
+        g.save();
+        drawConnectorsPolygon(g, landmarks, FACEMESH_POLYGON_RIGHT_EYE, { color: "gray", clip: true });
+        drawConnectorsIris(g, landmarks, FACEMESH_POLYGON_RIGHT_IRIS, { color: "black" });
+        g.restore();
+
+        g.save();
+        drawConnectorsPolygon(g, landmarks, FACEMESH_POLYGON_LEFT_EYE, { color: "gray", clip: true });
+        drawConnectorsIris(g, landmarks, FACEMESH_POLYGON_LEFT_IRIS, { color: "black" });
+        g.restore();
+        
+        // 口
         drawConnectorsPolygon(g, landmarks, FACEMESH_POLYGON_LIPS, { color: "red" });
+
+        // eyebrow = 眉
+        drawConnectorsPolyline(g, landmarks, FACEMESH_POLYLINE_RIGHT_EYEBROW, { color: "black" });
+        drawConnectorsPolyline(g, landmarks, FACEMESH_POLYLINE_LEFT_EYEBROW, { color: "black" });
+
       }
 
       // for eye-glasses
@@ -153,6 +191,9 @@ body {
 }
 #canvasElement {
   width: 100%;
+}
+label {
+  white-space: nowrap;
 }
 </style>
 
