@@ -1,5 +1,7 @@
 # mediapipe-test
 
+> 日本語のREADMEはこちらです: [README.ja.md](README.ja.md)
+
 https://code4fukui.github.io/mediapipe-test/
 
 ## Features
