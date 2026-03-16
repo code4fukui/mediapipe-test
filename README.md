@@ -2,10 +2,9 @@
 
 > 日本語のREADMEはこちらです: [README.ja.md](README.ja.md)
 
-https://code4fukui.github.io/mediapipe-test/
+This repository demonstrates various use cases of the MediaPipe library, including Face Mesh, Hands, Pose, and Selfie Segmentation.
 
 ## Features
-- Demonstrates various use cases of the MediaPipe library, including Face Mesh, Hands, Pose, and Selfie Segmentation.
 - Includes applications such as finger counting, face overlay, and posture analysis.
 - Utilizes the TensorFlow.js COCO-SSD model for object detection.
 
@@ -16,4 +15,4 @@ Requires a modern web browser that supports the necessary MediaPipe and TensorFl
 Open the HTML files in a web browser to run the corresponding demos.
 
 ## License
-This project is licensed under the [MIT License](LICENSE).
+MIT License — see [LICENSE](LICENSE).
